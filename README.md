@@ -85,29 +85,6 @@ python -m pip install -r requirements.txt
 python main_code.py --help
 ```
 
-
-
-
-
-
-
-
-
-
-Choose a PyTorch/torchvision build appropriate for your CPU or NVIDIA CUDA installation using the [official PyTorch instructions](https://pytorch.org/get-started/locally/). Then install the other dependencies:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-The requirement file records supported version ranges. For precise reproduction, record exact versions on the computer used for the experiment:
-
-```bash
-python -m pip freeze > local_environment_lock.txt
-```
-
-Retain that file with your experiment record; check it for private information before publishing it.
-
 ### 🚀 Running experiments
 
 View all input arguments:
