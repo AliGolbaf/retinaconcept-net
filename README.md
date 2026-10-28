@@ -85,8 +85,6 @@ python -m pip install -r requirements.txt
 python main_code.py --help
 ```
 
-**Note:** The virtual environment (`.venv`) is excluded from the repository. Each user should create their own environment and install the dependencies using `requirements.txt`.
-
 
 
 
