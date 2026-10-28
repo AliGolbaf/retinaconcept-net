@@ -13,10 +13,10 @@ The original model architecture, data loader, training functions and utility fun
 | File | Description |
 | --- | --- |
 | `main_code.py` | Original training/testing experiment, now driven by command-line arguments |
-| `models.py` | Original black-box and CBM architecture (unchanged) |
-| `train.py` | Original training and validation functions (unchanged) |
-| `data_loader.py` | Original image preprocessing and augmentation (unchanged) |
-| `utils.py` | Original annotation loading and grade/concept labels (unchanged) |
+| `models.py` | Original black-box and CBM architecture |
+| `train.py` | Original training and validation functions |
+| `data_loader.py` | Original image preprocessing and augmentation |
+| `utils.py` | Original annotation loading and grade/concept labels |
 | `cli_config.py` | Argument definitions and validation |
 | `reporting.py` | JSON output and per-class DR grading metrics |
 | `evaluate.py` | Independent test-set predictions, reliability and error analysis |
