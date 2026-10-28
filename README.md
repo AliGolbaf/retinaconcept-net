@@ -41,18 +41,63 @@ Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinop
 Data access: [MMRDR on Figshare](https://figshare.com/articles/dataset/MMRDR/29423747).
 
 ### ⚙️ Installation
+### ⚙️ Installation
 
-Python **3.11 or 3.12** is recommended. Create a separate environment:
+We recommend creating a separate Python virtual environment to ensure dependency isolation and reproducibility. Python 3.11 or 3.12 is recommended.
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/AliGolbaf/retinalconcept-net.git
+cd retinalconcept-net
+```
+
+**2. Create a virtual environment**
 
 ```bash
 python -m venv .venv
 ```
 
-On Windows PowerShell:
+**3. Activate the environment**
+
+On Windows (PowerShell):
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
+
+On Linux or macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+**4. Install dependencies**
+
+First, install the appropriate CPU or CUDA version of PyTorch following the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+
+Then install the remaining dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+**5. Verify the installation**
+
+```bash
+python main_code.py --help
+```
+
+**Note:** The virtual environment (`.venv`) is excluded from the repository. Each user should create their own environment and install the dependencies using `requirements.txt`.
+
+
+
+
+
+
+
+
+
 
 Choose a PyTorch/torchvision build appropriate for your CPU or NVIDIA CUDA installation using the [official PyTorch instructions](https://pytorch.org/get-started/locally/). Then install the other dependencies:
 
