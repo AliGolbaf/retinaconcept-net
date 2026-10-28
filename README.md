@@ -171,3 +171,13 @@ python explain.py --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --
 
 This writes one JSON prediction summary and seven PNGs comparing the original fundus image with each concept's evidence overlay. Adjust `--opacity`, `--threshold`, `--concept` or `--device` when required. The maps are low-resolution learned responses, not lesion annotations or causal explanations.
 
+### 📊 DR Grading Performance
+
+The performance of RetinaConcept-Net was compared against the ResNet-152 black-box classifier on the MMRDR-CFP test set. Results are reported as mean ± standard deviation across five fold-trained models.
+
+| Model | BAC (%) | Macro-F1 (%) | QWK |
+|---|---:|---:|---:|
+| ResNet-152 (Black-box) | 85.25 ± 2.65 | 81.35 ± 1.86 | 0.9269 ± 0.0203 |
+| RetinaConcept-Net (CBM) | 80.40 ± 2.48 | 76.80 ± 1.99 | 0.9072 ± 0.0184 |
+
+The black-box classifier achieved higher grading performance across all three metrics. RetinaConcept-Net provides an interpretable alternative by making its predictions exclusively through seven retinal lesion concepts.
