@@ -1,20 +1,20 @@
-# RetinalConcept-Net
+# RetinaConcept-Net
 
-This repository contains the official implementation of **RetinalConcept-Net**, a concept-based deep learning framework for explainable diabetic retinopathy classification using colour fundus photographs, developed by **Ali Golbaf**. 
+This repository contains the official implementation of **RetinaConcept-Net**, a concept-based deep learning framework for explainable diabetic retinopathy classification using colour fundus photographs, developed by **Ali Golbaf**. 
 
 The proposed framework integrates a **ResNet-152** backbone with a **Concept Bottleneck Model (CBM)** to perform five-class diabetic retinopathy grading using seven retinal lesion concepts, providing interpretable evidence to support model predictions.
-### 🔄 RetinalConcept-Net Workflow
-![RetinalConcept-Net Workflow](workflow.png)
+### 🔄 RetinaConcept-Net Workflow
+![RetinaConcept-Net Workflow](workflow.png)
 
 ### 🧠 Core ideas
 * **Interpretable grading through a Concept Bottleneck Model**  
-  RetinalConcept-Net introduces an explicit concept bottleneck between retinal image features and diabetic retinopathy (DR) severity predictions. Instead of directly predicting DR grades from deep image features, the model first predicts seven retinal lesion concepts, including microaneurysms, hard exudates, intraretinal haemorrhages, and neovascularisation. These concept predictions are then used to classify fundus images into five DR severity grades. By restricting the grading head to concept-level information, the framework provides a more transparent representation of the evidence contributing to its predictions.
+  RetinaConcept-Net introduces an explicit concept bottleneck between retinal image features and diabetic retinopathy (DR) severity predictions. Instead of directly predicting DR grades from deep image features, the model first predicts seven retinal lesion concepts, including microaneurysms, hard exudates, intraretinal haemorrhages, and neovascularisation. These concept predictions are then used to classify fundus images into five DR severity grades. By restricting the grading head to concept-level information, the framework provides a more transparent representation of the evidence contributing to its predictions.
 
 * **Multi-scale retinal feature extraction and concept localisation**  
-  RetinalConcept-Net employs a ResNet-152 backbone to extract spatial features from three intermediate network stages. These representations are projected into a shared feature space, aligned to a common spatial resolution, and fused to capture retinal abnormalities at different scales. A dedicated concept prediction head generates spatial activation maps for each lesion concept, enabling visual examination of the retinal regions contributing to concept predictions. These maps represent learned model evidence rather than clinically validated lesion segmentations.
+  RetinaConcept-Net employs a ResNet-152 backbone to extract spatial features from three intermediate network stages. These representations are projected into a shared feature space, aligned to a common spatial resolution, and fused to capture retinal abnormalities at different scales. A dedicated concept prediction head generates spatial activation maps for each lesion concept, enabling visual examination of the retinal regions contributing to concept predictions. These maps represent learned model evidence rather than clinically validated lesion segmentations.
 
 * **Two-stage training with concept-guided DR classification**  
-  RetinalConcept-Net adopts a two-stage training strategy to separate concept learning from disease severity classification. In the first stage, the concept prediction network is trained using lesion-level annotations, with top-k spatial pooling aggregating the strongest activation responses into image-level concept predictions. In the second stage, the concept extractor is frozen, and the grading head is trained to predict DR severity exclusively from the seven concept probabilities. This design allows concept recognition and grading performance to be evaluated separately, while a conventional ResNet-152 black-box model provides a baseline for comparison.
+  RetinaConcept-Net adopts a two-stage training strategy to separate concept learning from disease severity classification. In the first stage, the concept prediction network is trained using lesion-level annotations, with top-k spatial pooling aggregating the strongest activation responses into image-level concept predictions. In the second stage, the concept extractor is frozen, and the grading head is trained to predict DR severity exclusively from the seven concept probabilities. This design allows concept recognition and grading performance to be evaluated separately, while a conventional ResNet-152 black-box model provides a baseline for comparison.
 
 
 ### 🗂️ Repository files
@@ -35,21 +35,18 @@ The proposed framework integrates a **ResNet-152** backbone with a **Concept Bot
 ### 🖼️ Retinal Image Dataset
 
 The source dataset is described in:
-
 Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinopathy detection using foundation models*. Scientific Data, 13, 639. [DOI: 10.1038/s41597-026-07005-9](https://doi.org/10.1038/s41597-026-07005-9).
 
 Data access: [MMRDR on Figshare](https://figshare.com/articles/dataset/MMRDR/29423747).
 
 ### ⚙️ Installation
-### ⚙️ Installation
-
-We recommend creating a separate Python virtual environment to ensure dependency isolation and reproducibility. Python 3.11 or 3.12 is recommended.
+Python 3.11 or 3.12 is recommended.
 
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/AliGolbaf/retinalconcept-net.git
-cd retinalconcept-net
+git clone https://github.com/AliGolbaf/retinaconcept-net.git
+cd retinaconcept-net
 ```
 
 **2. Create a virtual environment**
