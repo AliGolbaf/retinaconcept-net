@@ -1,22 +1,31 @@
 # RetinalConcept-Net
 
-**Author: Ali Golbaf**
+This repository contains the official implementation of **RetinalConcept-Net**, a concept-based deep learning framework for explainable diabetic retinopathy classification using colour fundus photographs, developed by **Ali Golbaf**. 
 
-Research code for five-class diabetic retinopathy (DR) grading using colour fundus photographs (CFP) from MMRDR. This repository contains the original ResNet-152 black-box and Concept Bottleneck Model (CBM) implementations, with command-line configuration and reproducibility utilities.
+The proposed framework integrates a **ResNet-152** backbone with a **Concept Bottleneck Model (CBM)** to perform five-class diabetic retinopathy grading using seven retinal lesion concepts, providing interpretable evidence to support model predictions.
+### 🔄 RetinalConcept-Net Workflow
+![RetinalConcept-Net Workflow](workflow.png)
 
-The original model architecture, data loader, training functions and utility functions have been retained. Changes to `main_code.py` expose the experiment settings as arguments and save metrics. Additional scripts provide independent case-level evaluation and visualisation of the CBM's learned concept evidence. The graphical user interface is a **separate project** and is not included here.
+### 🧠 Core ideas
+* **Interpretable grading through a Concept Bottleneck Model**  
+  RetinalConcept-Net introduces an explicit concept bottleneck between retinal image features and diabetic retinopathy (DR) severity predictions. Instead of directly predicting DR grades from deep image features, the model first predicts seven retinal lesion concepts, including microaneurysms, hard exudates, intraretinal haemorrhages, and neovascularisation. These concept predictions are then used to classify fundus images into five DR severity grades. By restricting the grading head to concept-level information, the framework provides a more transparent representation of the evidence contributing to its predictions.
 
-> **Research use only.** No clinical validation is claimed. Softmax scores are not calibrated clinical probabilities. Learned concept maps should not be interpreted as confirmed lesion segmentation or clinical ground truth.
+* **Multi-scale retinal feature extraction and concept localisation**  
+  RetinalConcept-Net employs a ResNet-152 backbone to extract spatial features from three intermediate network stages. These representations are projected into a shared feature space, aligned to a common spatial resolution, and fused to capture retinal abnormalities at different scales. A dedicated concept prediction head generates spatial activation maps for each lesion concept, enabling visual examination of the retinal regions contributing to concept predictions. These maps represent learned model evidence rather than clinically validated lesion segmentations.
 
-## 1. Repository files
+* **Two-stage training with concept-guided DR classification**  
+  RetinalConcept-Net adopts a two-stage training strategy to separate concept learning from disease severity classification. In the first stage, the concept prediction network is trained using lesion-level annotations, with top-k spatial pooling aggregating the strongest activation responses into image-level concept predictions. In the second stage, the concept extractor is frozen, and the grading head is trained to predict DR severity exclusively from the seven concept probabilities. This design allows concept recognition and grading performance to be evaluated separately, while a conventional ResNet-152 black-box model provides a baseline for comparison.
+
+
+### 🗂️ Repository files
 
 | File | Description |
 | --- | --- |
 | `main_code.py` | Original training/testing experiment, now driven by command-line arguments |
-| `models.py` | Original black-box and CBM architecture (unchanged) |
-| `train.py` | Original training and validation functions (unchanged) |
-| `data_loader.py` | Original image preprocessing and augmentation (unchanged) |
-| `utils.py` | Original annotation loading and grade/concept labels (unchanged) |
+| `models.py` | Original black-box and CBM architecture |
+| `train.py` | Original training and validation functions |
+| `data_loader.py` | Original image preprocessing and augmentation|
+| `utils.py` | Original annotation loading and grade/concept labels |
 | `cli_config.py` | Argument definitions and validation |
 | `reporting.py` | JSON output and per-class DR grading metrics |
 | `evaluate.py` | Independent test-set predictions, reliability and error analysis |
