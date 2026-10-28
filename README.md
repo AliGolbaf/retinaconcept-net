@@ -40,6 +40,7 @@ Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinop
 Data access: [MMRDR on Figshare](https://figshare.com/articles/dataset/MMRDR/29423747).
 
 ### ⚙️ Installation
+
 Python 3.11 or 3.12 is recommended.
 
 **1. Clone the repository**
@@ -87,35 +88,73 @@ python main_code.py --help
 
 ### 🚀 Running experiments
 
-View all input arguments:
+The training configuration, including the number of folds, batch size, learning rate, number of epochs, and random seed, can be specified through command-line arguments.
+
+#### ⬛ Black-box model training
 
 ```bash
-python main_code.py --help
+python main_code.py --mode Train_Black-box --data-root "PATH-TO-DATA" --output-dir outputs --num-folds 5 --batch-size 32 --epochs 100 --learning-rate 0.0001 --seed 42
+```
+Replace `PATH-TO-DATA` with the directory containing the MMRDR-CFP dataset (`FP.csv` and the `img/` folder).
+
+The best checkpoint is saved for each fold:
+
+```text
+outputs/
+└── blackbox_resnet152/
+    ├── fold_1/best_model.pt
+    ├── fold_2/best_model.pt
+    ├── fold_3/best_model.pt
+    ├── fold_4/best_model.pt
+    └── fold_5/best_model.pt
 ```
 
-All dataset and output paths are now supplied as arguments; no personal drive path is needed. You can first check your input layout without importing PyTorch:
+#### 🔬 Concept Bottleneck Model Training
+
+RetinaConcept-Net is trained using a two-stage strategy to separate retinal lesion concept learning from diabetic retinopathy (DR) severity classification.
+
+**Stage 1: Concept Learning**
+
+The model learns seven retinal lesion concepts using the annotated colour fundus photographs. The ResNet-152 backbone is initialised using the corresponding pretrained black-box model checkpoint, and the concept prediction network is optimised using binary cross-entropy loss.
+
+**Stage 2: DR Grading**
+
+Following concept learning, the concept extractor is frozen, and only the grading head is trained to classify images into five DR severity grades using the seven predicted concept probabilities.
+
+**Run the training process**
 
 ```bash
-python main_code.py --mode Train_Black-box --data-root "D:/Datasets/MMRDR-CFP" --dry-run
+python main_code.py --mode Train_CBM --data-root "PATH-TO-DATA" --output-dir outputs --num-folds 5 --batch-size 32 --concept-epochs 100 --grading-epochs 100 --learning-rate 0.0001 --seed 42
 ```
 
-#### Black-box model training
+Replace `PATH-TO-DATA` with the directory containing the MMRDR-CFP dataset (`FP.csv` and the `img/` folder).
 
-```bash
-python main_code.py --mode Train_Black-box --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --num-folds 5 --batch-size 32 --epochs 100 --learning-rate 0.0001 --seed 42
+**Important:** The ResNet-152 black-box model must be trained first, as RetinaConcept-Net uses the corresponding black-box backbone weights to initialise the concept learning stage.
+
+The best checkpoints from both training stages are saved separately for each fold:
+
+```text
+outputs/
+└── cbm_resnet152/
+    ├── fold_1/
+    │   ├── best_concept_model.pt
+    │   └── best_cbm_model.pt
+    ├── fold_2/
+    │   ├── best_concept_model.pt
+    │   └── best_cbm_model.pt
+    ├── fold_3/
+    │   ├── best_concept_model.pt
+    │   └── best_cbm_model.pt
+    ├── fold_4/
+    │   ├── best_concept_model.pt
+    │   └── best_cbm_model.pt
+    └── fold_5/
+        ├── best_concept_model.pt
+        └── best_cbm_model.pt
 ```
 
-The best checkpoint from each fold is saved to `outputs/blackbox_resnet152/fold_N/best_model.pt`.
-
-#### Concept Bottleneck Model training
-
-Run the black-box training stage first. The CBM initialises its backbone from the matching black-box fold and then learns seven lesion concepts before training the linear DR grading head.
-
-```bash
-python main_code.py --mode Train_CBM --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --num-folds 5 --concept-epochs 100 --grading-epochs 100 --seed 42
-```
-
-The best concept and complete CBM weights are saved in `outputs/cbm_resnet152/fold_N/`.
+- `best_concept_model.pt`: Checkpoint selected using the lowest validation concept loss during Stage 1.
+- `best_cbm_model.pt`: Final Concept Bottleneck Model checkpoint selected using the lowest validation grading loss during Stage 2.
 
 #### Original experiment settings
 
