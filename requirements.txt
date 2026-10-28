@@ -1,0 +1,10 @@
+# RetinalConcept-Net -- research code by Ali Golbaf
+# Python 3.11/3.12; use a matching CPU/CUDA installation of PyTorch.
+torch>=2.5,<3
+torchvision>=0.20,<1
+numpy>=1.26,<3
+pandas>=2.2,<3
+scikit-learn>=1.4,<2
+Pillow>=10,<13
+tqdm>=4.66,<5
+openpyxl>=3.1,<4

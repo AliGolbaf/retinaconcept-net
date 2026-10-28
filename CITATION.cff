@@ -1,0 +1,7 @@
+cff-version: 1.2.0
+message: "Please cite this research software and the MMRDR dataset paper when appropriate."
+type: software
+title: "RetinalConcept-Net: Concept-Based Diabetic Retinopathy Grading"
+authors:
+  - family-names: Golbaf
+    given-names: Ali
