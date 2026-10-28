@@ -1,53 +1,55 @@
 # RetinalConcept-Net
 
-**Reproducible, concept-based diabetic retinopathy grading from colour fundus photographs.**
+**Author: Ali Golbaf**
 
-Research implementation by **Ali Golbaf**. This repository contains the experiment code used to train and evaluate a ResNet-152 black-box baseline and a strict concept bottleneck model (CBM) on the **MMRDR-CFP** dataset. The CBM estimates seven lesion-related concepts using multi-scale image features and predicts one of five diabetic retinopathy (DR) grades **only from its seven concept probabilities**.
+Research code for five-class diabetic retinopathy (DR) grading using colour fundus photographs (CFP) from MMRDR. This repository contains the original ResNet-152 black-box and Concept Bottleneck Model (CBM) implementations, with command-line configuration and reproducibility utilities.
 
-> **Research use only.** This code is not a validated medical device. Softmax scores are not calibrated clinical probabilities. Concept activation maps are *model evidence*, not verified pixel-wise lesion segmentations. Human clinical judgement remains essential.
+The original model architecture, data loader, training functions and utility functions have been retained. Changes to `main_code.py` expose the experiment settings as arguments and save metrics. Additional scripts provide independent case-level evaluation and visualisation of the CBM's learned concept evidence. The graphical user interface is a **separate project** and is not included here.
 
-## Repository contents
+> **Research use only.** No clinical validation is claimed. Softmax scores are not calibrated clinical probabilities. Learned concept maps should not be interpreted as confirmed lesion segmentation or clinical ground truth.
 
-| File | Purpose |
+## 1. Repository files
+
+| File | Description |
 | --- | --- |
-| `main_code.py` | Command-line interface (`--help`) for training and evaluation |
-| `experiment.py` | The original two-stage CBM and black-box experimental procedure, parameterised |
-| `models.py` | Original ResNet-152 architectures, unchanged in behaviour |
-| `train.py` | Training/validation loops, per-class metrics and reliability summaries |
-| `data_loader.py` | CFP image preprocessing and augmentation |
-| `utils.py` | Annotation loading, grade/concept labels, parameter counts |
-| `explain.py` | Single-image predictions and seven concept-evidence comparison PNGs |
-| `requirements.txt` | Python dependency specifications |
-| `tests/` | CLI checks runnable without dataset or checkpoint files |
-| `.github/workflows/` | Automatic syntax and dataset-free CLI checks on GitHub |
-| `CITATION.cff` | Software citation metadata |
+| `main_code.py` | Original training/testing experiment, now driven by command-line arguments |
+| `models.py` | Original black-box and CBM architecture (unchanged) |
+| `train.py` | Original training and validation functions (unchanged) |
+| `data_loader.py` | Original image preprocessing and augmentation (unchanged) |
+| `utils.py` | Original annotation loading and grade/concept labels (unchanged) |
+| `cli_config.py` | Argument definitions and validation |
+| `reporting.py` | JSON output and per-class DR grading metrics |
+| `evaluate.py` | Independent test-set predictions, reliability and error analysis |
+| `explain.py` | Case-level CBM concept activation visualisations |
+| `tests/` | Dataset-free unit tests |
 
-No dataset images, clinical metadata, checkpoint weights or measured study results are included here.
+## 2. Dataset
 
-## 1. Obtain and prepare the dataset
+The source dataset is described in:
 
-MMRDR dataset paper: [Tang et al., *Scientific Data* (2026)](https://doi.org/10.1038/s41597-026-07005-9). Dataset access: [MMRDR on Figshare](https://figshare.com/articles/dataset/MMRDR/29423747). Follow the dataset provider's conditions before downloading or processing the data.
+Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinopathy detection using foundation models*. Scientific Data, 13, 639. [DOI: 10.1038/s41597-026-07005-9](https://doi.org/10.1038/s41597-026-07005-9).
 
-Download and extract only the relevant **MMRDR-CFP** subset to a private local directory:
+Data access: [MMRDR on Figshare](https://figshare.com/articles/dataset/MMRDR/29423747).
+
+Download the **MMRDR-CFP** subset separately, subject to its access/licensing conditions. The dataset and associated annotations are **not** distributed in this repository.
+
+The expected local layout is:
 
 ```text
 MMRDR-CFP/
   FP.csv
   img/
     tr000001.jpg
-    tr000002.jpg
     ...
     ts000001.jpg
     ...
 ```
 
-`FP.csv` must have columns `image`, `grade`, and `lesion`. `grade` contains integers 0–4; `lesion` contains seven binary concept values in the dataset's published order. Filenames prefixed `tr` are used for development; `ts` images are reserved for independent testing. The loader handles the `img/...` prefixes in the CSV.
+`FP.csv` must contain `image`, `grade` (0–4) and `lesion` (seven binary concept labels). The original data loading code uses `tr*` for training/validation and `ts*` for the independent test set. The CFP split in the dataset paper is at **image level** because patient identifiers are unavailable; patient-level independence must not be claimed.
 
-**Important data-splitting limitation:** The MMRDR dataset paper reports that its CFP train/test split is **at image level** because source patient identifiers were unavailable. Our five-fold stratification is also image based; subject/patient-level independence cannot be established from those identifiers alone. Do not claim patient-independent validation. Do not use test images to choose hyperparameters or checkpoints.
+## 3. Installation
 
-## 2. Installation
-
-Python **3.11 or 3.12** recommended, with sufficient RAM/VRAM for ResNet-152 training.
+Python **3.11 or 3.12** is recommended. Create a separate environment:
 
 ```bash
 python -m venv .venv
@@ -59,107 +61,105 @@ On Windows PowerShell:
 .\.venv\Scripts\Activate.ps1
 ```
 
-On Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-Install a compatible PyTorch + torchvision build for your CPU or GPU via the [official installation selector](https://pytorch.org/get-started/locally/), then install the remaining dependencies:
+Choose a PyTorch/torchvision build appropriate for your CPU or NVIDIA CUDA installation using the [official PyTorch instructions](https://pytorch.org/get-started/locally/). Then install the other dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-See `requirements.txt` for the supported dependency version ranges. To record the **exact** versions used to reproduce results, run `python -m pip freeze > local_environment_lock.txt` after installation; retain that file with the experiment record (and publish it after PI review if appropriate). Version ranges are not a substitute for an archived, tested lockfile.
+The requirement file records supported version ranges. For precise reproduction, record exact versions on the computer used for the experiment:
 
-## 3. Command-line arguments
+```bash
+python -m pip freeze > local_environment_lock.txt
+```
+
+Retain that file with your experiment record; check it for private information before publishing it.
+
+## 4. Running experiments
+
+View all input arguments:
 
 ```bash
 python main_code.py --help
 ```
 
-The previous hard-coded `E:\...\MMRDR-CFP` location is removed. Use `--data-root` to point to your own authorised copy. Paths containing spaces should be quoted. The mode, seed, fold count/selection, batch size, image resolution, workers, epochs, learning rate, weight decay, early-stopping patience, ImageNet initialisation, class weights, device and output folder are all configurable.
-
-Before using PyTorch, verify that the input locations resolve:
+All dataset and output paths are now supplied as arguments; no personal drive path is needed. You can first check your input layout without importing PyTorch:
 
 ```bash
 python main_code.py --mode Train_Black-box --data-root "D:/Datasets/MMRDR-CFP" --dry-run
 ```
 
-### Train the black-box baseline
+### Black-box model training
 
 ```bash
-python main_code.py --mode Train_Black-box --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --seed 42 --folds 5 --batch-size 32 --epochs 100 --learning-rate 0.0001 --device auto
+python main_code.py --mode Train_Black-box --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --num-folds 5 --batch-size 32 --epochs 100 --learning-rate 0.0001 --seed 42
 ```
 
-This saves one best-validation-loss checkpoint per fold at `outputs/blackbox_resnet152/fold_N/best_model.pt`.
+The best checkpoint from each fold is saved to `outputs/blackbox_resnet152/fold_N/best_model.pt`.
 
-### Train the concept bottleneck model
+### Concept Bottleneck Model training
+
+Run the black-box training stage first. The CBM initialises its backbone from the matching black-box fold and then learns seven lesion concepts before training the linear DR grading head.
 
 ```bash
-python main_code.py --mode Train_CBM --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --seed 42 --folds 5 --concept-epochs 100 --grading-epochs 100 --device auto
+python main_code.py --mode Train_CBM --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs --num-folds 5 --concept-epochs 100 --grading-epochs 100 --seed 42
 ```
 
-**Run black-box training first.** CBM stage 1 initialises its backbone from the **matching black-box fold**. It trains spatial concept predictors and then freezes the concept extractor to train a linear grading head on predicted concept probabilities only. Outputs are written to `outputs/cbm_resnet152/fold_N/` as `best_concept_model.pt` and `best_cbm_model.pt`.
+The best concept and complete CBM weights are saved in `outputs/cbm_resnet152/fold_N/`.
 
-For a quick single-fold test (not a full reported experiment), append `--fold 1 --epochs 2` to black-box training or `--fold 1 --concept-epochs 2 --grading-epochs 2` to CBM training. These short runs are only pipeline checks.
+### Original experiment settings
 
-**Checkpoint reuse:** `--reuse-checkpoints` initialises model weights from existing files. It **does not** restore optimiser, scheduler, scaler, or epoch state, so it is *not* a strict training resume. Without this flag, a training run starts a new fit and may replace checkpoints for the selected fold. Use a new `--output-dir` to preserve prior experiments.
+The default values match the supplied experiment script: seed 42, five stratified folds, batch size 32, image size 224×224, AdamW learning rate 1e-4 and weight decay 1e-4. Black-box training uses ImageNet initialisation by default. The original two-stage CBM training procedure is unchanged.
 
-## 4. Independent test evaluation
+You can change these settings with `--seed`, `--batch-size`, `--image-size`, `--num-workers`, `--device`, `--learning-rate`, `--weight-decay`, `--epochs`, `--concept-epochs`, `--grading-epochs` and early-stopping arguments. Use `--fold 1` to run one of the five fold splits for a pipeline check.
 
-After training (and freezing hyperparameter choices):
+**Important:** `--load-existing-models` is enabled by default, preserving the original script's behaviour. To train without reusing existing model weights, pass `--no-load-existing-models` and preferably select a fresh `--output-dir`. Loading weights is **not** a full optimiser/scheduler resume.
+
+### Test evaluation
 
 ```bash
 python main_code.py --mode Test_Black-box --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs
 python main_code.py --mode Test_CBM --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs
 ```
 
-These commands evaluate each saved fold model **separately** on the `ts` images. They report the mean/standard deviation of the per-fold metrics; **they are not test-set ensemble predictions**. Use `--fold 1` to evaluate only one fold.
+These commands assess the independently trained fold models one at a time on the `ts*` images; they do not construct an ensemble. The console and saved JSON files report accuracy, balanced accuracy, macro-F1, quadratic weighted kappa, per-class precision/recall/F1, the confusion matrix, and the number of grade underestimations. Configuration files and metrics JSON are saved under `outputs/`.
 
-Training and evaluation automatically save machine-readable JSON under the matching model output directory:
+## 5. Case-level error and reliability analysis
 
-- `train_black-box_metrics.json`, `train_cbm_metrics.json` — validation metrics per fold.
-- `test_black-box_metrics.json`, `test_cbm_metrics.json` — independent test metrics per fold.
-- `*_configuration.json` — command-line inputs and PyTorch version.
+For a detailed independent assessment using a selected checkpoint:
 
-Metrics include accuracy, balanced accuracy, macro-F1, quadratic weighted kappa, all five class precision/recall/F1/support values, a 5×5 confusion matrix, and the count of **severity underestimations**. Validation/test output also includes the top-class **10-bin expected calibration error (ECE)** and mean maximum softmax score as descriptive uncertainty/reliability indicators. ECE does not make predictions calibrated. The **test JSON** additionally includes per-image IDs, actual/predicted grades, top-class scores and (for CBM) concept scores, allowing identification of representative errors and severe underestimations. These per-image results are local and excluded from Git by default. No metrics are supplied or fabricated in this repository; regenerate them from your authorised dataset and actual checkpoints.
+```bash
+python evaluate.py --model cbm --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs/evaluation
+```
 
-## 5. Generate explanations and example outputs
+Or specify `--model blackbox` and its matching checkpoint. The resulting JSON includes each test image ID, actual and predicted grades, uncalibrated softmax scores, underestimation indicators and (for CBM) predicted concept scores. It also reports top-class 10-bin expected calibration error (ECE) as a **descriptive** reliability measure; ECE does not calibrate a model. Use the case records to review representative classification errors, particularly severe underestimation and confidently incorrect predictions.
+
+## 6. Concept evidence visualisations
 
 ```bash
 python explain.py --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --image "D:/Datasets/MMRDR-CFP/img/ts000001.jpg" --output-dir outputs/explanations --concept all
 ```
 
-The command saves:
+This writes one JSON prediction summary and seven PNGs comparing the original fundus image with each concept's evidence overlay. Adjust `--opacity`, `--threshold`, `--concept` or `--device` when required. The maps are low-resolution learned responses, not lesion annotations or causal explanations.
 
-- `ts000001_prediction.json` with the predicted grade, five uncalibrated softmax scores and seven image-level concept scores;
-- `ts000001_concept_MA.png` and six further side-by-side **original / concept evidence** images.
+To meet the assessment's example-output requirement, generate examples locally using authorised images. Only share them if dataset permissions allow it. Real experimental results have not been invented or included in this repository.
 
-Optional controls: `--opacity 0.65`, `--threshold 0.25`, `--concept 0` (only microaneurysms), `--device cpu`, or `--max-display-size 1200`. These visualisations show learned spatial activation, not pixel-level ground truth, causal attribution, or verified lesion locations. Use multiple representative correct predictions, errors and severity underestimations for reporting; share illustrative CFP images only if dataset terms permit it.
+## 7. Reproducibility and limitations
 
-## 6. Reproducibility and interpretation notes
+1. Do not use the `ts*` test set for training, validation or hyperparameter selection.
+2. Use the same random seed, fold count and output root when comparing the two models.
+3. The source code seeds Python, NumPy and PyTorch. `--deterministic` requests deterministic PyTorch execution where supported; exact reproducibility can still depend on hardware and libraries.
+4. Five-fold stratification is based on image-level DR grades. Without patient identifiers, cross-image patient leakage cannot be ruled out.
+5. Record your actual command, package versions, checkpoint provenance and the generated metrics alongside the report.
+6. The CBM's five-grade decision uses the seven predicted concept probabilities only; its spatial maps are exploratory model evidence.
+7. Never upload raw CFP images, `FP.csv`, checkpoints, confidential metadata or automatically generated outputs to this public repository. `.gitignore` helps, but review files before pushing.
 
-1. Keep the original `FP.csv` and `img/` together; preserve the dataset's `tr`/`ts` partition.
-2. Use the **same** `--seed`, `--folds`, image preprocessing, concept order and output root for both models. The code seeds Python, NumPy and PyTorch; add `--deterministic` for stricter algorithms where supported. Absolute bitwise reproducibility may still vary by hardware and library versions.
-3. Training uses grade-stratified five-fold CV on the `tr` subset, with training-only image augmentation and early stopping on validation loss.
-4. Choose hyperparameters using training/validation information only. Test images are not used for fitting or checkpoint selection.
-5. Record the actual CLI command, software versions, checkpoint provenance, selected folds, and the output JSON files with the technical report.
-6. Do not interpret a high softmax score as a calibrated clinical probability; inspect failure cases, including underestimation of severe DR.
+### Authorship and acknowledgements
 
-The two-stage CBM employs **seven binary concepts**: microaneurysms; hard exudates; intraretinal haemorrhages; venous beading/IRMA; neovascularisation; vitreous haemorrhage; retinal detachment. The five output grades are No DR, Mild NPDR, Moderate NPDR, Severe NPDR and Proliferative DR.
+The original black-box model, CBM model, training, data-loading and utility code were provided by **Ali Golbaf**. Repository command-line, evaluation and documentation utilities were prepared around that research code and should be reviewed by the project author before publication. Acknowledge any AI assistance in accordance with the applicable assessment policy. Cite the MMRDR dataset and relevant pretrained ResNet/torchvision resources.
 
-## 7. Data privacy, provenance and limitations
+No open-source licence has been selected; this requires the author's or PI's approval before publication.
 
-- **Never commit** dataset files, images, `FP.csv`, checkpoints, private paths, personal metadata, results derived from restricted images, or local environments. `.gitignore` excludes likely sensitive directories, but inspect `git status` before each push.
-- Pretrained backbone uses torchvision ImageNet weights if `--pretrained` (default for black-box training); first use may require internet. Cite PyTorch/torchvision and the original ResNet literature as appropriate.
-- No external clinical validation is presented. The repository is a research prototype, not a clinical screening or diagnostic tool.
-- No public licence is declared pending the project owner's/PI's decision. Do not assume permission to reuse or redistribute third-party data or checkpoints.
+## 8. Publishing to GitHub
 
-### References
-
-- Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinopathy detection using foundation models*. Scientific Data 13, 639. https://doi.org/10.1038/s41597-026-07005-9
-- He, K., Zhang, X., Ren, S. & Sun, J. (2016). Deep Residual Learning for Image Recognition. CVPR.
-- Koh, P. W. et al. (2020). Concept Bottleneck Models. ICML.
-
+Create a new, empty GitHub repository (for example, `RetinalConcept-Net`). Upload the **contents of this folder** to the repository root; do not add the separate GUI project. Keep the source code, README, dependency file, citation and tests visible. Before pushing, check the files staged for publication and ensure there are no images, datasets, checkpoints or private outputs. Confirm the assessor can access the repository link.
