@@ -171,6 +171,3 @@ python explain.py --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --
 
 This writes one JSON prediction summary and seven PNGs comparing the original fundus image with each concept's evidence overlay. Adjust `--opacity`, `--threshold`, `--concept` or `--device` when required. The maps are low-resolution learned responses, not lesion annotations or causal explanations.
 
-To meet the assessment's example-output requirement, generate examples locally using authorised images. Only share them if dataset permissions allow it. Real experimental results have not been invented or included in this repository.
-
-No open-source licence has been selected; this requires the author's or PI's approval before publication.
