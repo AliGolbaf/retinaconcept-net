@@ -156,32 +156,12 @@ outputs/
 - `best_concept_model.pt`: Checkpoint selected using the lowest validation concept loss during Stage 1.
 - `best_cbm_model.pt`: Final Concept Bottleneck Model checkpoint selected using the lowest validation grading loss during Stage 2.
 
-#### Original experiment settings
-
-The default values match the supplied experiment script: seed 42, five stratified folds, batch size 32, image size 224×224, AdamW learning rate 1e-4 and weight decay 1e-4. Black-box training uses ImageNet initialisation by default. The original two-stage CBM training procedure is unchanged.
-
-You can change these settings with `--seed`, `--batch-size`, `--image-size`, `--num-workers`, `--device`, `--learning-rate`, `--weight-decay`, `--epochs`, `--concept-epochs`, `--grading-epochs` and early-stopping arguments. Use `--fold 1` to run one of the five fold splits for a pipeline check.
-
-**Important:** `--load-existing-models` is enabled by default, preserving the original script's behaviour. To train without reusing existing model weights, pass `--no-load-existing-models` and preferably select a fresh `--output-dir`. Loading weights is **not** a full optimiser/scheduler resume.
-
 #### Test evaluation
 
 ```bash
 python main_code.py --mode Test_Black-box --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs
 python main_code.py --mode Test_CBM --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs
 ```
-
-These commands assess the independently trained fold models one at a time on the `ts*` images; they do not construct an ensemble. The console and saved JSON files report accuracy, balanced accuracy, macro-F1, quadratic weighted kappa, per-class precision/recall/F1, the confusion matrix, and the number of grade underestimations. Configuration files and metrics JSON are saved under `outputs/`.
-
-## 5. Case-level error and reliability analysis
-
-For a detailed independent assessment using a selected checkpoint:
-
-```bash
-python evaluate.py --model cbm --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --data-root "D:/Datasets/MMRDR-CFP" --output-dir outputs/evaluation
-```
-
-Or specify `--model blackbox` and its matching checkpoint. The resulting JSON includes each test image ID, actual and predicted grades, uncalibrated softmax scores, underestimation indicators and (for CBM) predicted concept scores. It also reports top-class 10-bin expected calibration error (ECE) as a **descriptive** reliability measure; ECE does not calibrate a model. Use the case records to review representative classification errors, particularly severe underestimation and confidently incorrect predictions.
 
 ## 6. Concept evidence visualisations
 
