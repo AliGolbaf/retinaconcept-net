@@ -32,7 +32,7 @@ The proposed framework integrates a **ResNet-152** backbone with a **Concept Bot
 | `explain.py` | Case-level CBM concept activation visualisations |
 | `tests/` | Dataset-free unit tests |
 
-### 🖼️ Retinal Image Dataset
+### 🖼️ Retinal image dataset
 
 The source dataset is described in:
 Tang, Z. et al. (2026). *A multimodal retinal image dataset for diabetic retinopathy detection using foundation models*. Scientific Data, 13, 639. [DOI: 10.1038/s41597-026-07005-9](https://doi.org/10.1038/s41597-026-07005-9).
@@ -109,15 +109,15 @@ outputs/
     └── fold_5/best_model.pt
 ```
 
-#### 🔬 Concept Bottleneck Model Training
+#### 🔬 Concept bottleneck model training
 
 RetinaConcept-Net is trained using a two-stage strategy to separate retinal lesion concept learning from diabetic retinopathy (DR) severity classification.
 
-**Stage 1: Concept Learning**
+**Stage 1: Concept learning**
 
 The model learns seven retinal lesion concepts using the annotated colour fundus photographs. The ResNet-152 backbone is initialised using the corresponding pretrained black-box model checkpoint, and the concept prediction network is optimised using binary cross-entropy loss.
 
-**Stage 2: DR Grading**
+**Stage 2: DR grading**
 
 Following concept learning, the concept extractor is frozen, and only the grading head is trained to classify images into five DR severity grades using the seven predicted concept probabilities.
 
@@ -171,7 +171,7 @@ python explain.py --checkpoint outputs/cbm_resnet152/fold_1/best_cbm_model.pt --
 
 This writes one JSON prediction summary and seven PNGs comparing the original fundus image with each concept's evidence overlay. Adjust `--opacity`, `--threshold`, `--concept` or `--device` when required. The maps are low-resolution learned responses, not lesion annotations or causal explanations.
 
-### 📊 DR Grading Performance
+### 📊 DR grading performance
 
 The performance of RetinaConcept-Net was compared against the ResNet-152 black-box classifier on the MMRDR-CFP test set. Results are reported as mean ± standard deviation across five fold-trained models.
 
